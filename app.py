@@ -1,23 +1,26 @@
 import streamlit as st
 import numpy as np
-from sklearn.preprocessing import StandardScaler,OneHotEncoder
+import tensorflow as tf
+from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
 import pandas as pd
 import pickle
-import tensorflow as tf
-#Load the model
 
-model=tf.keras.models.load_model('model.h5')
+# Load the trained model
+model = tf.keras.models.load_model('model.h5')
 
-with open('label_encoder_gender.pkl','rb') as file:
-    label_encoder_gender=pickle.load(file)
-with open('onehot_encoder_geo.pkl','rb') as file:
-    onehot_encoder_geo=pickle.load(file)
-with open('scaler.pkl','rb') as file:
-    scaler=pickle.load(file)
+# Load the encoders and scaler
+with open('label_encoder_gender.pkl', 'rb') as file:
+    label_encoder_gender = pickle.load(file)
 
-#Streamlit app
+with open('onehot_encoder_geo.pkl', 'rb') as file:
+    onehot_encoder_geo = pickle.load(file)
 
-st.title("Customer Churn Prediction")
+with open('scaler.pkl', 'rb') as file:
+    scaler = pickle.load(file)
+
+
+## streamlit app
+st.title('Customer Churn PRediction')
 
 # User input
 geography = st.selectbox('Geography', onehot_encoder_geo.categories_[0])
@@ -44,7 +47,6 @@ input_data = pd.DataFrame({
     'EstimatedSalary': [estimated_salary]
 })
 
-
 # One-hot encode 'Geography'
 geo_encoded = onehot_encoder_geo.transform([[geography]]).toarray()
 geo_encoded_df = pd.DataFrame(geo_encoded, columns=onehot_encoder_geo.get_feature_names_out(['Geography']))
@@ -54,6 +56,7 @@ input_data = pd.concat([input_data.reset_index(drop=True), geo_encoded_df], axis
 
 # Scale the input data
 input_data_scaled = scaler.transform(input_data)
+
 
 # Predict churn
 prediction = model.predict(input_data_scaled)
